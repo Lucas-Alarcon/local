@@ -1,4 +1,6 @@
 function getCityByPostalCode(postalCode) {
+    let startTime = Date.now();
+
     axios.get(
         apiBasUrl,
         {
@@ -7,7 +9,14 @@ function getCityByPostalCode(postalCode) {
                 'format': 'geojson',
             }
         }
-    ).then(writesData).catch(function (response) {M.toast({html: response})});
+    ).then(function (response) {
+        let during = Date.now() - startTime,
+            numberOfResults = response.data.features.length,
+            population = sumPopulation(response.data.features),
+            result = document.getElementById('result');
+        result.textContent = `Population total : ${population} sur ${numberOfResults} communes (${during}ms)`;
+        writesData(response);
+    }).catch(function (response) {M.toast({html: response})});
 }
 
 function writesData(response) {
@@ -35,3 +44,10 @@ function rowTemplate(data) {
 </tr>`;
 }
 
+function sumPopulation(cities) {
+    let population = 0;
+    for(let city of cities) {
+        population += city.properties.population;
+    }
+    return population;
+}
